@@ -1,4 +1,3 @@
-
 use std::io;
 
 struct Task {
@@ -10,14 +9,19 @@ fn main() {
     let mut tasks: Vec<Task> = Vec::new();
 
     loop {
-        println!("\n1- Ekle\n2- Listele\n3- Sil\n4- Çıkış");
+        println!("\n===== GÖREV YÖNETİM SİSTEMİ =====");
+        println!("1 - Görev Ekle");
+        println!("2 - Görevleri Listele");
+        println!("3 - Görev Sil");
+        println!("4 - Çıkış");
 
         let mut choice = String::new();
         io::stdin().read_line(&mut choice).unwrap();
 
         match choice.trim() {
             "1" => {
-                println!("Görev gir:");
+                println!("Görev adını giriniz:");
+
                 let mut title = String::new();
                 io::stdin().read_line(&mut title).unwrap();
 
@@ -26,33 +30,54 @@ fn main() {
                     done: false,
                 });
 
-                println!("Eklendi!");
+                println!("Görev başarıyla eklendi.");
             }
 
             "2" => {
-                for (i, task) in tasks.iter().enumerate() {
-                    println!("{} - {}", i, task.title);
+                if tasks.is_empty() {
+                    println!("Kayıtlı görev bulunamadı.");
+                } else {
+                    println!("\nGörev Listesi:");
+
+                    for (i, task) in tasks.iter().enumerate() {
+                        println!("{} - {}", i + 1, task.title);
+                    }
                 }
             }
 
             "3" => {
-                println!("Silinecek index:");
+                if tasks.is_empty() {
+                    println!("Silinecek görev bulunamadı.");
+                    continue;
+                }
+
+                println!("Silmek istediğiniz görev numarasını giriniz:");
+
                 let mut index = String::new();
                 io::stdin().read_line(&mut index).unwrap();
 
-                let i: usize = index.trim().parse().unwrap_or(999);
+                let index: usize = match index.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => {
+                        println!("Geçersiz giriş!");
+                        continue;
+                    }
+                };
 
-                if i < tasks.len() {
-                    tasks.remove(i);
-                    println!("Silindi!");
+                if index == 0 || index > tasks.len() {
+                    println!("Geçersiz görev numarası!");
                 } else {
-                    println!("Hatalı seçim!");
+                    tasks.remove(index - 1);
+                    println!("Görev silindi.");
                 }
             }
 
-            "4" => break,
+            "4" => {
+                println!("Program sonlandırıldı.");
+                break;
+            }
 
-            _ => println!("Yanlış seçim"),
+            _ => println!("Geçersiz seçim yaptınız."),
         }
     }
 }
