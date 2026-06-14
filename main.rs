@@ -147,6 +147,110 @@
 // }
 
 //?sprint3
+// use std::io;
+
+// struct Task {
+//     title: String,
+//     done: bool,
+// }
+
+// fn main() {
+//     let mut tasks: Vec<Task> = Vec::new();
+
+//     loop {
+//         println!("\n===== GÖREV YÖNETİM SİSTEMİ =====");
+//         println!("1 - Görev Ekle");
+//         println!("2 - Görevleri Listele");
+//         println!("3 - Görev Sil");
+//         println!("4 - Görev Tamamla");
+//         println!("5 - Çıkış");
+
+//         let choice = get_input();
+
+//         match choice.as_str() {
+//             "1" => add_task(&mut tasks),
+//             "2" => list_tasks(&tasks),
+//             "3" => delete_task(&mut tasks),
+//             "4" => complete_task(&mut tasks),
+//             "5" => {
+//                 println!("Program sonlandırıldı.");
+//                 break;
+//             }
+//             _ => println!("Geçersiz seçim!"),
+//         }
+//     }
+// }
+
+// fn add_task(tasks: &mut Vec<Task>) {
+//     println!("Görev adını giriniz:");
+//     let title = get_input();
+
+//     tasks.push(Task {
+//         title,
+//         done: false,
+//     });
+
+//     println!("Görev eklendi.");
+// }
+
+// fn list_tasks(tasks: &Vec<Task>) {
+//     if tasks.is_empty() {
+//         println!("Görev yok.");
+//         return;
+//     }
+
+//     println!("\nGörev Listesi:");
+//     for (i, task) in tasks.iter().enumerate() {
+//         let status = if task.done { "✔" } else { "✖" };
+//         println!("{} - {} [{}]", i + 1, task.title, status);
+//     }
+// }
+
+// fn delete_task(tasks: &mut Vec<Task>) {
+//     println!("Silinecek görev numarası:");
+//     let index = parse_index();
+
+//     if index == 0 || index > tasks.len() {
+//         println!("Geçersiz numara!");
+//         return;
+//     }
+
+//     tasks.remove(index - 1);
+//     println!("Görev silindi.");
+// }
+
+// fn complete_task(tasks: &mut Vec<Task>) {
+//     println!("Tamamlanacak görev numarası:");
+//     let index = parse_index();
+
+//     if index == 0 || index > tasks.len() {
+//         println!("Geçersiz numara!");
+//         return;
+//     }
+
+//     tasks[index - 1].done = true;
+//     println!("Görev tamamlandı.");
+// }
+
+// fn get_input() -> String {
+//     let mut input = String::new();
+//     io::stdin().read_line(&mut input).unwrap();
+//     input.trim().to_string()
+// }
+
+// fn parse_index() -> usize {
+//     let input = get_input();
+
+//     match input.parse() {
+//         Ok(num) => num,
+//         Err(_) => {
+//             println!("Geçersiz giriş!");
+//             0
+//         }
+//     }
+// }
+//?sprint4
+use std::fs;
 use std::io;
 
 struct Task {
@@ -155,7 +259,7 @@ struct Task {
 }
 
 fn main() {
-    let mut tasks: Vec<Task> = Vec::new();
+    let mut tasks = load_tasks();
 
     loop {
         println!("\n===== GÖREV YÖNETİM SİSTEMİ =====");
@@ -173,7 +277,8 @@ fn main() {
             "3" => delete_task(&mut tasks),
             "4" => complete_task(&mut tasks),
             "5" => {
-                println!("Program sonlandırıldı.");
+                save_tasks(&tasks);
+                println!("Veriler kaydedildi. Program sonlandırıldı.");
                 break;
             }
             _ => println!("Geçersiz seçim!"),
@@ -182,7 +287,8 @@ fn main() {
 }
 
 fn add_task(tasks: &mut Vec<Task>) {
-    println!("Görev adını giriniz:");
+    println!("Görev adı:");
+
     let title = get_input();
 
     tasks.push(Task {
@@ -190,62 +296,116 @@ fn add_task(tasks: &mut Vec<Task>) {
         done: false,
     });
 
+    save_tasks(tasks);
+
     println!("Görev eklendi.");
 }
 
 fn list_tasks(tasks: &Vec<Task>) {
     if tasks.is_empty() {
-        println!("Görev yok.");
+        println!("Kayıtlı görev bulunamadı.");
         return;
     }
 
     println!("\nGörev Listesi:");
+
     for (i, task) in tasks.iter().enumerate() {
         let status = if task.done { "✔" } else { "✖" };
+
         println!("{} - {} [{}]", i + 1, task.title, status);
     }
 }
 
 fn delete_task(tasks: &mut Vec<Task>) {
-    println!("Silinecek görev numarası:");
+    if tasks.is_empty() {
+        println!("Silinecek görev bulunamadı.");
+        return;
+    }
+
+    println!("Silmek istediğiniz görev numarası:");
+
     let index = parse_index();
 
     if index == 0 || index > tasks.len() {
-        println!("Geçersiz numara!");
+        println!("Geçersiz görev numarası!");
         return;
     }
 
     tasks.remove(index - 1);
+
+    save_tasks(tasks);
+
     println!("Görev silindi.");
 }
 
 fn complete_task(tasks: &mut Vec<Task>) {
+    if tasks.is_empty() {
+        println!("Tamamlanacak görev bulunamadı.");
+        return;
+    }
+
     println!("Tamamlanacak görev numarası:");
+
     let index = parse_index();
 
     if index == 0 || index > tasks.len() {
-        println!("Geçersiz numara!");
+        println!("Geçersiz görev numarası!");
         return;
     }
 
     tasks[index - 1].done = true;
+
+    save_tasks(tasks);
+
     println!("Görev tamamlandı.");
 }
 
 fn get_input() -> String {
     let mut input = String::new();
+
     io::stdin().read_line(&mut input).unwrap();
+
     input.trim().to_string()
 }
 
 fn parse_index() -> usize {
     let input = get_input();
 
-    match input.parse() {
+    match input.parse::<usize>() {
         Ok(num) => num,
         Err(_) => {
-            println!("Geçersiz giriş!");
+            println!("Hatalı giriş!");
             0
         }
     }
 }
+
+fn save_tasks(tasks: &Vec<Task>) {
+    let mut data = String::new();
+
+    for task in tasks {
+        data.push_str(&format!("{}|{}\n", task.title, task.done));
+    }
+
+    fs::write("tasks.txt", data).expect("Dosya yazılamadı!");
+}
+
+fn load_tasks() -> Vec<Task> {
+    let mut tasks = Vec::new();
+
+    if let Ok(content) = fs::read_to_string("tasks.txt") {
+        for line in content.lines() {
+            let parts: Vec<&str> = line.split('|').collect();
+
+            if parts.len() == 2 {
+                tasks.push(Task {
+                    title: parts[0].to_string(),
+                    done: parts[1] == "true",
+                });
+            }
+        }
+    }
+
+    tasks
+}
+
